@@ -183,7 +183,7 @@ export default function Page() {
             </button>
           </div>
 
-          {/* Language */}
+          
           <Dropdown name="Language">
             <section>
               <Toggle
