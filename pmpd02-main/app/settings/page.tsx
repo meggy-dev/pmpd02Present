@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { UserSettings } from '../../lib/types'
+import type { UserSettings } from '../lib/types'
 
 // ── Default settings ──────────────────────────────────────────────────────────
 

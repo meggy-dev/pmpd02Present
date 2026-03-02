@@ -1,7 +1,7 @@
 "user client"
 import { redirect } from 'next/navigation'
 import { getSession, addTaskAction, deleteTaskAction, logoutAction, getUserTasks } from '../lib/actions'
-import type { Task } from '@/lib/types'
+import type { Task } from '../lib/types'
 import { TaskCreateDialog, NavDialog } from '@/app/components/MainDialogs'
 
 // ── Original component replicas ───────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { getUserSettings, saveSettingsAction } from '../../../lib/actions'
+import { getUserSettings, saveSettingsAction } from '../../lib/actions'
 
 export async function GET() {
   const settings = await getUserSettings()

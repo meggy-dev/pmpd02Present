@@ -1,8 +1,8 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import type { Task } from '../../lib/types'
+import { Suspense, useEffect, useState } from 'react'
+import type { Task } from '../lib/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -155,18 +155,22 @@ function Tasklist({ date, taskMap }: { date: Date; taskMap: Record<string, Task[
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function Page() {
-  const dateParam = useSearchParams().get('date')
+// 1. Move the logic into a separate internal component
+function CalendarContent() {
+  const searchParams = useSearchParams()
+  const dateParam = searchParams.get('date')
   const [tasks, setTasks] = useState<Task[]>([])
 
-  // Parse date safely without timezone shift
+  // Parse date safely
   let date = new Date()
   if (dateParam) {
-    const [y, m, d] = dateParam.split('-').map(Number)
-    date = new Date(y, m - 1, d)
+    const parts = dateParam.split('-').map(Number)
+    if (parts.length === 3) {
+      const [y, m, d] = parts
+      date = new Date(y, m - 1, d)
+    }
   }
 
-  // Fetch tasks from API route (avoids server-only fs module in client bundle)
   useEffect(() => {
     fetch('/api/tasks', { credentials: 'include' })
       .then(r => r.ok ? r.json() : [])
@@ -188,5 +192,18 @@ export default function Page() {
         <Tasklist date={date} taskMap={taskMap} />
       </div>
     </main>
+  )
+}
+
+// 2. The main export now just wraps the content in Suspense
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="h-dvh w-dvw flex items-center justify-center bg-indigo-200 text-indigo-500 font-bold">
+        Loading Calendar...
+      </div>
+    }>
+      <CalendarContent />
+    </Suspense>
   )
 }
