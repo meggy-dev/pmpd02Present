@@ -1,4 +1,3 @@
-"use client"
 import { Task, Header } from './components'
 import { DesktopAuthButtons, MobileLoginForm } from './components/AuthForms'
 
@@ -8,7 +7,7 @@ export default function Page() {
 
       {/* ── Desktop ── */}
       <div
-        className="hidden lg:flex lg:items-center min-h-screen bg-blue-200 overflow-hidden"
+        className="hidden lg:flex lg:items-center min-h-screen bg-blue-200"
         style={{
           backgroundImage: 'url(/desktopbackground.png)',
           backgroundSize: 'cover',

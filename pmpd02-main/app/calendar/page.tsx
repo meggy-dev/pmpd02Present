@@ -1,21 +1,18 @@
-'use client'
-
-import { useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useState } from 'react'
-import type { Task } from '../lib/types'
+import { getUserTasks } from '../lib/actions'
+import type { Task } from '../../lib/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+const monthNames   = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+const dayNames     = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 const monthLengths = [31,29,31,30,31,30,31,31,30,31,30,31]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function padded(n: number) { return n.toString().padStart(2, '0') }
 
-function severityColour(s: Task['severity']) {
-  return s === 'high' ? 'bg-red-500' : s === 'medium' ? 'bg-amber-500' : 'bg-green-500'
+function severityDot(s: Task['severity']) {
+  return s === 'high' ? 'bg-red-400' : s === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'
 }
 
 function buildTaskMap(tasks: Task[]): Record<string, Task[]> {
@@ -79,7 +76,7 @@ function CalendarRow({ dayIndex, date, taskMap }: {
             {inMonth && dayTasks.length > 0 && (
               <div className="flex justify-center gap-0.5 mt-0.5">
                 {dayTasks.slice(0, 3).map((t) => (
-                  <span key={t.id} className={`w-2 h-2 rounded-full ${severityColour(t.severity)}`} />
+                  <span key={t.id} className={`w-2 h-2 rounded-full ${severityDot(t.severity)}`} />
                 ))}
                 {dayTasks.length > 3 && (
                   <span className="text-[8px] text-gray-500 leading-none">+{dayTasks.length - 3}</span>
@@ -153,57 +150,41 @@ function Tasklist({ date, taskMap }: { date: Date; taskMap: Record<string, Task[
   )
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// ── Page — pure server component, searchParams passed as prop by Next.js ──────
 
-// 1. Move the logic into a separate internal component
-function CalendarContent() {
-  const searchParams = useSearchParams()
-  const dateParam = searchParams.get('date')
-  const [tasks, setTasks] = useState<Task[]>([])
+type Props = {
+  searchParams: Promise<{ date?: string }>
+}
 
-  // Parse date safely
+export default async function Page({ searchParams }: Props) {
+  const { date: dateParam } = await searchParams
+  const tasks = await getUserTasks()
+  const taskMap = buildTaskMap(tasks)
+
   let date = new Date()
   if (dateParam) {
-    const parts = dateParam.split('-').map(Number)
-    if (parts.length === 3) {
-      const [y, m, d] = parts
-      date = new Date(y, m - 1, d)
-    }
+    const [y, m, d] = dateParam.split('-').map(Number)
+    date = new Date(y, m - 1, d)
   }
-
-  useEffect(() => {
-    fetch('/api/tasks', { credentials: 'include' })
-      .then(r => r.ok ? r.json() : [])
-      .then(setTasks)
-      .catch(() => setTasks([]))
-  }, [])
-
-  const taskMap = buildTaskMap(tasks)
 
   return (
     <main className="text-black text-2xl bg-indigo-200 h-dvh">
-      <section className="hidden lg:flex">
-        <Header title="Calendar" />
-      </section>
-      <DateHeader date={date} />
-      <a href="/main" className="text-5xl absolute top-8 right-12 hover:opacity-50 cursor-pointer rounded-full bg-white px-2 py-2 lg:-my-4 lg:rounded-t-[0%]">&#60;</a>
+      {/* Desktop header with back button centred in the bar */}
+      <div className="hidden lg:flex items-center justify-between py-4 bg-pink-400 px-6">
+        <div className="w-20" />
+        <h1 className="text-3xl font-bold">Calendar</h1>
+        <a href="/main" className="text-3xl hover:opacity-50 cursor-pointer rounded-full bg-white w-10 h-10 flex items-center justify-center font-bold">&#60;</a>
+      </div>
+
+      {/* Mobile — original DateHeader + back button */}
+      <div className="lg:hidden">
+        <DateHeader date={date} />
+        <a href="/main" className="text-5xl absolute top-8 right-12 hover:opacity-50 cursor-pointer rounded-full bg-white px-2 py-2">&#60;</a>
+      </div>
       <div className="flex flex-col lg:flex-row justify-center items-center lg:h-[70vh]">
         <Calendar date={date} taskMap={taskMap} />
         <Tasklist date={date} taskMap={taskMap} />
       </div>
     </main>
-  )
-}
-
-// 2. The main export now just wraps the content in Suspense
-export default function Page() {
-  return (
-    <Suspense fallback={
-      <div className="h-dvh w-dvw flex items-center justify-center bg-indigo-200 text-indigo-500 font-bold">
-        Loading Calendar...
-      </div>
-    }>
-      <CalendarContent />
-    </Suspense>
   )
 }

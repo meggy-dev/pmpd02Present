@@ -1,13 +1,5 @@
 [
   {
-    "id": "8be9f1e7-ecc7-40ed-aa6e-7e3c859eb3fa",
-    "userId": "3d34010a-38ac-41f2-a450-53cd9eb8fa59",
-    "name": "adad",
-    "time": "1-01-01",
-    "severity": "high",
-    "createdAt": "2026-03-01T21:55:42.883Z"
-  },
-  {
     "id": "2a52969c-69b9-4b7f-92ad-4922b2482a9e",
     "userId": "fda59a4a-825e-413d-a574-cb5ebecccf73",
     "name": "gh",
