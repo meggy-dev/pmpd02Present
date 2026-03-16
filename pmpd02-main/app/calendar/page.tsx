@@ -1,5 +1,5 @@
 import { getUserTasks } from '../lib/actions'
-import type { Task } from '../../lib/types'
+import type { Task } from '../lib/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
